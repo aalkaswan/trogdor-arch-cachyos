@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""2-in-1 Chromebook touch companion for Niri & Hyprland (Google Lazor / SC7180).
+
+Handles:
+- 360-degree hinge SW_TABLET_MODE detection via cros_ec_buttons
+- Accelerometer screen auto-rotation via iio-sensor-proxy (monitor-sensor)
+- Automatic Wayland on-screen keyboard (squeekboard) toggle via GSettings
+- Automatic touchpad/keyboard disable in Hyprland tablet mode
+"""
+
+import os
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+import evdev
+
+SWITCH_PATH = "/dev/input/by-path/platform-a80000.spi-cs-0-platform-a80000.spi:ec@0:keyboard-controller-event"
+STATE_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "chromebook-touch"
+ROTATE_LOCK_FILE = STATE_DIR / "rotate-mode"  # "auto" (tablet-only), "always", "locked"
+
+# Accelerometer orientation -> (niri transform, hyprland transform int)
+ORIENT_MAP = {
+    "normal": ("normal", 0),
+    "left-up": ("90", 1),
+    "bottom-up": ("180", 2),
+    "right-up": ("270", 3),
+}
+
+state_lock = threading.Lock()
+tablet_mode = False
+current_orient = "normal"
+applied_orient = "normal"
+
+
+def compositor():
+    if os.environ.get("NIRI_SOCKET"):
+        return "niri"
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        return "hyprland"
+    return "unknown"
+
+
+def notify(title: str, body: str):
+    if shutil.which("noctalia"):
+        subprocess.run(
+            ["noctalia", "msg", "notification-show", title, body],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+
+def set_osk(enabled: bool):
+    val = "true" if enabled else "false"
+    subprocess.run(
+        [
+            "gsettings",
+            "set",
+            "org.gnome.desktop.a11y.applications",
+            "screen-keyboard-enabled",
+            val,
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def apply_rotation(orient: str):
+    global applied_orient
+    if orient not in ORIENT_MAP:
+        return
+    if orient == applied_orient:
+        return
+    niri_tf, hypr_tf = ORIENT_MAP[orient]
+    comp = compositor()
+    if comp == "niri":
+        subprocess.run(
+            ["niri", "msg", "output", "eDP-1", "transform", niri_tf],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    elif comp == "hyprland":
+        subprocess.run(
+            ["hyprctl", "keyword", "monitor", f"eDP-1,1920x1080@60,0x0,1.33,transform,{hypr_tf}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["hyprctl", "keyword", "input:touchdevice:transform", str(hypr_tf)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["hyprctl", "keyword", "input:tablet:transform", str(hypr_tf)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    applied_orient = orient
+
+
+def set_hypr_inputs(enabled: bool):
+    if compositor() != "hyprland":
+        return
+    flag = "true" if enabled else "false"
+    for dev in ("elan-touchpad", "keyd-virtual-keyboard", "cros_ec"):
+        subprocess.run(
+            ["hyprctl", "keyword", f"device[{dev}]:enabled", flag],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+
+def get_rotate_mode() -> str:
+    try:
+        mode = ROTATE_LOCK_FILE.read_text().strip()
+        if mode in ("auto", "always", "locked"):
+            return mode
+    except FileNotFoundError:
+        pass
+    return "auto"
+
+
+def sync_rotation():
+    mode = get_rotate_mode()
+    if mode == "locked":
+        return
+    if mode == "always" or tablet_mode:
+        apply_rotation(current_orient)
+    else:
+        apply_rotation("normal")
+
+
+def apply_tablet_mode(is_tablet: bool, announce: bool = True):
+    global tablet_mode
+    with state_lock:
+        tablet_mode = is_tablet
+        set_osk(is_tablet)
+        set_hypr_inputs(not is_tablet)
+        sync_rotation()
+    if announce:
+        if is_tablet:
+            notify("Tablet Mode", "Auto-rotate & touch keyboard enabled")
+        else:
+            notify("Laptop Mode", "Screen locked to landscape")
+
+
+def watch_tablet_switch():
+    while True:
+        try:
+            dev = evdev.InputDevice(SWITCH_PATH)
+            # Check initial SW_TABLET_MODE state
+            sw_state = dev.leds()  # fallback check via EVIOCGSW below
+            active_sw = dev.active_keys(verbose=False)
+            # Read actual switch state via ioctl EVIOCGSW
+            import fcntl
+            buf = bytearray(8)
+            EVIOCGSW = 0x8008451B
+            fcntl.ioctl(dev.fd, EVIOCGSW, buf)
+            sw_bits = int.from_bytes(buf, "little")
+            is_tablet = bool(sw_bits & (1 << evdev.ecodes.SW_TABLET_MODE))
+            apply_tablet_mode(is_tablet, announce=False)
+
+            for event in dev.read_loop():
+                if event.type == evdev.ecodes.EV_SW and event.code == evdev.ecodes.SW_TABLET_MODE:
+                    apply_tablet_mode(bool(event.value), announce=True)
+        except Exception:
+            time.sleep(2)
+
+
+def watch_accelerometer():
+    global current_orient
+    pattern = re.compile(r"Accelerometer orientation changed:\s*(\S+)")
+    while True:
+        try:
+            proc = subprocess.Popen(
+                ["monitor-sensor", "--accel"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                bufsize=1,
+            )
+            assert proc.stdout is not None
+            for line in proc.stdout:
+                m = pattern.search(line)
+                if m:
+                    orient = m.group(1)
+                    if orient in ORIENT_MAP:
+                        with state_lock:
+                            current_orient = orient
+                            sync_rotation()
+            proc.wait()
+        except Exception:
+            time.sleep(2)
+
+
+def handle_usr1(_signum, _frame):
+    with state_lock:
+        sync_rotation()
+
+
+def main():
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    if not ROTATE_LOCK_FILE.exists():
+        ROTATE_LOCK_FILE.write_text("auto\n")
+    signal.signal(signal.SIGUSR1, handle_usr1)
+
+    t1 = threading.Thread(target=watch_tablet_switch, daemon=True)
+    t2 = threading.Thread(target=watch_accelerometer, daemon=True)
+    t1.start()
+    t2.start()
+
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

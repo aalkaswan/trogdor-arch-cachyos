@@ -1,0 +1,15 @@
+#!/bin/bash
+# Cycle auto-rotation mode: auto (tablet-only) -> always -> locked
+set -e
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/chromebook-touch"
+MODE_FILE="$STATE_DIR/rotate-mode"
+mkdir -p "$STATE_DIR"
+cur=$(cat "$MODE_FILE" 2>/dev/null || echo "auto")
+case "$cur" in
+  auto)   next="always"; msg="Auto-rotate: Always ON" ;;
+  always) next="locked"; msg="Auto-rotate: Locked" ;;
+  *)      next="auto";   msg="Auto-rotate: Tablet Mode Only" ;;
+esac
+echo "$next" > "$MODE_FILE"
+pkill -USR1 -f chromebook-touch-daemon 2>/dev/null || true
+noctalia msg notification-show "Screen Rotation" "$msg" >/dev/null 2>&1 || true

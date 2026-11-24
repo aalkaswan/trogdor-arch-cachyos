@@ -1,0 +1,67 @@
+/* Noctalia-matched sleek dark theme for Squeekboard (Wayland OSK)
+ * Automatically tracks Noctalia's dynamic @define-color palette from noctalia.css.
+ */
+
+sq_view {
+    background-color: alpha(@window_bg_color, 0.92);
+    border-top: 1px solid alpha(@accent_bg_color, 0.22);
+    padding: 6px 8px 10px 8px;
+}
+
+sq_button {
+    background-image: none;
+    background-color: shade(@card_bg_color, 1.18);
+    color: @window_fg_color;
+    border: 1px solid alpha(@window_fg_color, 0.10);
+    border-bottom: 2px solid alpha(#000000, 0.35);
+    border-radius: 10px;
+    box-shadow: none;
+    font-family: "JetBrainsMono Nerd Font", "Liberation Sans", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    margin: 2px;
+}
+
+sq_button.altline,
+sq_button.wide,
+sq_button.special,
+sq_button.special-2,
+sq_button.special-3,
+sq_button.change-view {
+    background-image: none;
+    background-color: shade(@card_bg_color, 0.92);
+    color: alpha(@window_fg_color, 0.88);
+    border: 1px solid alpha(@window_fg_color, 0.08);
+    border-bottom: 2px solid alpha(#000000, 0.40);
+    border-radius: 10px;
+}
+
+sq_button.Return,
+sq_button.suggested-action {
+    background-image: none;
+    background-color: alpha(@accent_bg_color, 0.90);
+    color: @accent_fg_color;
+    border-color: alpha(@accent_bg_color, 0.95);
+    font-weight: 700;
+}
+
+sq_button:active,
+sq_button.altline:active,
+sq_button.wide:active,
+sq_button.special:active,
+sq_button.special-2:active,
+sq_button.special-3:active,
+sq_button.change-view:active {
+    background-image: none;
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    border-color: @accent_bg_color;
+}
+
+sq_button.locked {
+    background-image: none;
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    border-color: @accent_bg_color;
+    font-weight: 700;
+}

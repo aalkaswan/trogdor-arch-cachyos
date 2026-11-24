@@ -1,0 +1,12 @@
+#!/bin/bash
+# Manually toggle Squeekboard Wayland on-screen keyboard on/off
+set -e
+pgrep -x squeekboard >/dev/null 2>&1 || (squeekboard >/dev/null 2>&1 &)
+cur=$(gsettings get org.gnome.desktop.a11y.applications screen-keyboard-enabled)
+if [ "$cur" = "true" ]; then
+  gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled false
+  noctalia msg notification-show "Touch Keyboard" "Auto touch keyboard disabled" >/dev/null 2>&1 || true
+else
+  gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true
+  noctalia msg notification-show "Touch Keyboard" "Auto touch keyboard enabled (tap any text field)" >/dev/null 2>&1 || true
+fi

@@ -1,0 +1,118 @@
+# Wide terminal keyboard layout for 13.3" 1080p landscape (Kitty / terminals)
+# Full width with Esc, Tab, Ctrl, Alt, numbers, symbols, and arrow keys.
+---
+outlines:
+    default:       { width: 108, height: 38 }
+    change-view:   { width: 152, height: 38 }
+    change-view-2: { width: 136, height: 38 }
+    spaceline:     { width: 420, height: 38 }
+    special:       { width: 108, height: 38 }
+    special-2:     { width: 152, height: 38 }
+    special-3:     { width: 168, height: 38 }
+    arrow:         { width: 84,  height: 38 }
+
+views:
+    base:
+        - "Escape 1 2 3 4 5 6 7 8 9 0 - BackSpace"
+        - "Tab q w e r t y u i o p / \\"
+        - "Control a s d f g h j k l ; ' Return"
+        - "show_upper z x c v b n m , . Up show_symbols"
+        - "Alt preferences space Left Down Right"
+    upper:
+        - "Escape ! @ # $ % ^ & * ( ) _ BackSpace"
+        - "Tab Q W E R T Y U I O P ? |"
+        - "Control A S D F G H J K L : \" Return"
+        - "show_upper Z X C V B N M < > Up show_symbols"
+        - "Alt preferences space Left Down Right"
+    symbols:
+        - "Escape ~ ` ! @ # $ % ^ & * = BackSpace"
+        - "Tab [ ] { } ( ) < > / \\ | +"
+        - "Control - _ : ; ' \" , . ? ! Return"
+        - "show_letters Home End Page_Up Page_Down Delete Up show_letters"
+        - "Alt preferences space Left Down Right"
+
+buttons:
+    Escape:
+        outline: "special"
+        label: "Esc"
+        keysym: "Escape"
+    Tab:
+        outline: "special"
+        label: "Tab"
+        keysym: "Tab"
+    Control:
+        modifier: "Control"
+        outline: "change-view-2"
+        label: "Ctrl"
+    Alt:
+        modifier: "Alt"
+        outline: "special"
+        label: "Alt"
+    show_upper:
+        action:
+            locking:
+                lock_view: "upper"
+                unlock_view: "base"
+        outline: "change-view"
+        icon: "key-shift"
+    show_symbols:
+        action:
+            set_view: "symbols"
+        outline: "change-view"
+        label: "*/="
+    show_letters:
+        action:
+            set_view: "base"
+        outline: "change-view"
+        label: "ABC"
+    BackSpace:
+        outline: "special-2"
+        icon: "edit-clear-symbolic"
+        action: "erase"
+    preferences:
+        action: "show_prefs"
+        outline: "special"
+        icon: "keyboard-mode-symbolic"
+    space:
+        outline: "spaceline"
+        text: " "
+    Return:
+        outline: "special-3"
+        icon: "key-enter"
+        keysym: "Return"
+    Left:
+        outline: "arrow"
+        label: "←"
+        keysym: "Left"
+    Right:
+        outline: "arrow"
+        label: "→"
+        keysym: "Right"
+    Up:
+        outline: "arrow"
+        label: "↑"
+        keysym: "Up"
+    Down:
+        outline: "arrow"
+        label: "↓"
+        keysym: "Down"
+    Home:
+        outline: "special"
+        label: "Home"
+        keysym: "Home"
+    End:
+        outline: "special"
+        label: "End"
+        keysym: "End"
+    Page_Up:
+        outline: "special"
+        label: "PgUp"
+        keysym: "Prior"
+    Page_Down:
+        outline: "special"
+        label: "PgDn"
+        keysym: "Next"
+    Delete:
+        outline: "special"
+        label: "Del"
+        keysym: "Delete"

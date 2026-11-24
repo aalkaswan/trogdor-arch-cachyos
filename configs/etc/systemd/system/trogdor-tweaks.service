@@ -1,0 +1,14 @@
+[Unit]
+Description=SC7180 Trogdor eMMC/IOMMU/zswap/THP/CPU tuning
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'for i in /sys/block/mmcblk?/queue/scheduler; do [ -f "$i" ] && echo none > "$i" || true; done'
+ExecStart=/bin/sh -c 'for i in /sys/devices/platform/soc@0/7c4000.mmc/iommu_group/type /sys/devices/platform/soc@0/8804000.mmc/iommu_group/type /sys/devices/platform/soc@0/a6f8800.usb/a600000.usb/iommu_group/type; do [ -f "$i" ] && echo DMA-FQ > "$i" || true; done'
+ExecStart=/bin/sh -c 'if [ -f /sys/module/zswap/parameters/enabled ]; then echo zstd > /sys/module/zswap/parameters/compressor; echo zsmalloc > /sys/module/zswap/parameters/zpool; echo 30 > /sys/module/zswap/parameters/max_pool_percent; echo 1 > /sys/module/zswap/parameters/enabled; fi'
+ExecStart=/bin/sh -c '[ -f /sys/kernel/mm/transparent_hugepage/enabled ] && echo madvise > /sys/kernel/mm/transparent_hugepage/enabled || true'
+ExecStart=/bin/sh -c 'for g in /sys/devices/system/cpu/cpufreq/policy?/scaling_governor; do [ -f "$g" ] && echo schedutil > "$g" || true; done'
+
+[Install]
+WantedBy=multi-user.target

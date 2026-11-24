@@ -1,0 +1,110 @@
+# Wide tablet/laptop layout for 13.3" 1080p landscape (Google Lazor)
+# Aspect ratio ~7.1:1 so Squeekboard spans full screen width at comfortable height (~265px).
+---
+outlines:
+    default:       { width: 108, height: 42 }
+    change-view:   { width: 162, height: 42 }
+    change-view-2: { width: 144, height: 42 }
+    large:         { width: 108, height: 42 }
+    spaceline:     { width: 486, height: 42 }
+    special:       { width: 108, height: 42 }
+    special-2:     { width: 162, height: 42 }
+    special-3:     { width: 180, height: 42 }
+    arrow:         { width: 84,  height: 42 }
+
+views:
+    base:
+        - "Tab q w e r t y u i o p BackSpace"
+        - "show_numbers a s d f g h j k l ' Return"
+        - "show_upper z x c v b n m , . Up show_upper_r"
+        - "preferences show_symbols space Left Down Right"
+    upper:
+        - "Tab Q W E R T Y U I O P BackSpace"
+        - "show_numbers A S D F G H J K L \" Return"
+        - "show_upper Z X C V B N M ; : Up show_upper_r"
+        - "preferences show_symbols space Left Down Right"
+    numbers:
+        - "Escape 1 2 3 4 5 6 7 8 9 0 BackSpace"
+        - "show_letters @ # $ % & - _ + ( ) Return"
+        - "show_symbols ! ? / \\ : ; \" ' = Up show_symbols"
+        - "preferences show_letters space Left Down Right"
+    symbols:
+        - "Escape ~ ` | ^ * [ ] { } < > BackSpace"
+        - "show_letters ! @ # $ % & - _ + = Return"
+        - "show_numbers_from_symbols \\ / < > ( ) [ ] ; Up show_numbers_from_symbols"
+        - "preferences show_letters space Left Down Right"
+
+buttons:
+    Escape:
+        outline: "special"
+        label: "Esc"
+        keysym: "Escape"
+    Tab:
+        outline: "special"
+        label: "Tab"
+        keysym: "Tab"
+    show_upper:
+        action:
+            locking:
+                lock_view: "upper"
+                unlock_view: "base"
+        outline: "change-view"
+        icon: "key-shift"
+    show_upper_r:
+        action:
+            locking:
+                lock_view: "upper"
+                unlock_view: "base"
+        outline: "change-view"
+        icon: "key-shift"
+    BackSpace:
+        outline: "special-2"
+        icon: "edit-clear-symbolic"
+        action: "erase"
+    preferences:
+        action: "show_prefs"
+        outline: "special"
+        icon: "keyboard-mode-symbolic"
+    show_numbers:
+        action:
+            set_view: "numbers"
+        outline: "change-view-2"
+        label: "123"
+    show_numbers_from_symbols:
+        action:
+            set_view: "numbers"
+        outline: "change-view"
+        label: "123"
+    show_letters:
+        action:
+            set_view: "base"
+        outline: "change-view-2"
+        label: "ABC"
+    show_symbols:
+        action:
+            set_view: "symbols"
+        outline: "change-view"
+        label: "*/="
+    space:
+        outline: "spaceline"
+        text: " "
+    Return:
+        outline: "special-3"
+        icon: "key-enter"
+        keysym: "Return"
+    Left:
+        outline: "arrow"
+        label: "←"
+        keysym: "Left"
+    Right:
+        outline: "arrow"
+        label: "→"
+        keysym: "Right"
+    Up:
+        outline: "arrow"
+        label: "↑"
+        keysym: "Up"
+    Down:
+        outline: "arrow"
+        label: "↓"
+        keysym: "Down"
