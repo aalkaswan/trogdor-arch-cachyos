@@ -33,7 +33,8 @@ Two hard technical blockers prevent installing official CachyOS ISOs on this dev
 
 ## Repository Layout
 
-- `README.md` — End-to-end installation & post-install guide (this file)
+- `README.md` — End-to-end installation & post-install guide (USB-free A/B Btrfs path)
+- `docs/install-from-chromeos-usb.md` — **Start here on a clean stock ChromeOS device** (Developer Mode → `crossystem` → Velvet OS USB → direct eMMC Arch install)
 - `docs/hardware-quirks.md` — Every SC7180 / `stb-cbq` kernel quirk encountered & fixed
 - `docs/kernel-and-boot.md` — Depthcharge A/B kernel slots, safe one-shot testing, rollback, and updates
 - `scripts/install-chroot-base.sh` — Creates Btrfs `@arch` subvolume, extracts Arch Linux ARM, transplants Qualcomm modules/firmware
@@ -41,6 +42,13 @@ Two hard technical blockers prevent installing official CachyOS ISOs on this dev
 - `scripts/build-and-flash-kernelb.sh` — Builds signed Depthcharge kernel targeting `rootflags=subvol=@arch` and arms a one-shot test boot on `KernelB`
 - `scripts/chromebook-touch-daemon`, `toggle-osk`, `toggle-autorotate` — 2-in-1 tablet mode, auto-rotate, and on-screen keyboard helpers
 - `configs/` — Tested system (`/etc`) and user (`niri`, `kitty`, `squeekboard`, `chrome-flags.conf`) configs
+
+---
+
+## Choose Your Starting Point
+
+- **Starting from a clean stock ChromeOS Chromebook (via USB)**: Follow **[docs/install-from-chromeos-usb.md](docs/install-from-chromeos-usb.md)** first (Developer Mode, `crossystem dev_boot_usb=1`, Velvet OS bootstrap USB, and either direct eMMC partitioning or two-step install).
+- **Already running Velvet OS (`chromebook_trogdor` Debian) on internal eMMC (USB-free)**: Follow the A/B Btrfs steps directly below.
 
 ---
 
