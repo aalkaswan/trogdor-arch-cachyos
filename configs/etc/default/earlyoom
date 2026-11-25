@@ -1,0 +1,1 @@
+EARLYOOM_ARGS="-m 5 -s 15 -r 3600 -n --avoid '(^|/)(init|systemd|niri|Hyprland|noctalia|greetd|pipewire|wireplumber|keyd|sshd)$' --prefer '(^|/)(chrome|firefox|Isolated Web Co|Web Content|cc1plus|rustc)$'"

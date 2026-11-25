@@ -32,7 +32,7 @@ fi
 
 echo "==> 2. Installing system configs from repo"
 cat <<'EOF' > "${MNT}/etc/fstab"
-LABEL=rootemmc  /      btrfs  subvol=@arch,defaults,ssd,compress-force=zstd,noatime,nodiratime  0  0
+LABEL=rootemmc  /      btrfs  subvol=@arch,defaults,ssd,compress=zstd:1,noatime  0  0
 LABEL=bootemmc  /boot  ext4   defaults,noatime,nodiratime,errors=remount-ro                     0  2
 /swap/swapfile  none   swap   defaults                                                          0  0
 EOF
@@ -75,8 +75,8 @@ pacman -Syyu --noconfirm --needed \
   firefox
 
 # Tune makepkg.conf for Qualcomm Snapdragon 7c (ARMv8.2-A)
-sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/makepkg.conf
-sed -i 's/!lto/lto/' /etc/makepkg.conf
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS=\"-j4\"/' /etc/makepkg.conf
+sed -i 's/ lto)/ !lto)/' /etc/makepkg.conf
 
 echo '${HOSTNAME}' > /etc/hostname
 sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
