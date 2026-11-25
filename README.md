@@ -2,9 +2,12 @@
 
 A complete, field-tested guide, configuration pack, and helper scripts for installing **Arch Linux ARM (`aarch64`)** with **CachyOS-style performance tuning**, **Niri / Hyprland + Noctalia Shell & Greeter**, **ChromeOS top-row keys**, and **2-in-1 touchscreen/auto-rotate/OSK support** on Qualcomm Snapdragon 7c (`SC7180` / `trogdor`) Chromebooks — specifically verified on **Acer Chromebook Spin 513 (`Google Lazor rev9`)**.
 
+<img width="1919" height="746" alt="satty-2026-11-25_01:02:02" src="https://github.com/user-attachments/assets/e24afe62-7b05-4193-8396-42040c675820" />
+
 ---
 
 ## Why Not Official CachyOS Directly?
+
 
 Two hard technical blockers prevent installing official CachyOS ISOs on this device:
 
